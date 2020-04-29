@@ -1,5 +1,5 @@
 # Data from https://www.cdc.gov/nchs/nvss/vsrr/covid19/index.htm
-# Covid19: Death vs Age 4/24/2020
+# Covid19: Death vs Age 4/28/2020
 
 library(data.table)
 library(lattice)
