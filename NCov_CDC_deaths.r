@@ -5,7 +5,7 @@ library(data.table)
 library(lattice)
 library(Hmisc)
 
-ByAge <- fread("Provisional_Death_Counts_for_Coronavirus_Disease__COVID-19_ 4.26.2020.CSV",encoding="UTF-8")[Group == "By age",]
+ByAge <- fread("Provisional_Death_Counts_for_Coronavirus_Disease__COVID-19_4.28.2020.CSV",encoding="UTF-8")[Group == "By age",]
 names(ByAge) <- ByAge[,gsub("-","_",colnames(.SD))]
 names(ByAge) <- ByAge[,gsub(" ","_",colnames(.SD))]
 names(ByAge) <- ByAge[,gsub(",","",colnames(.SD))]
@@ -58,6 +58,41 @@ ByAgeChart[,plot(All.Deaths ~ (Age.Index),cex=2,lwd=2,pch=19,type="b",col="black
 ByAgeChart[,plot(Pneum.Deaths ~ (Age.Index),cex=2,lwd=2,pch=20,type="b",col="red")]
 ByAgeChart[,plot(Covid19.Deaths ~ (Age.Index),cex=2,lwd=2,pch=21,type="b",col="blue")]
 par(mfrow=c(1,1))
+
+
+merge(
+setnames(cbind(Date=as.Date(now()),as.data.table(t(cbind(
+ByAgeChart[1:3,3][,.(Age24andYounger=fsum(.SD))],
+ByAgeChart[1:5,3][,.(Age44andYounger=fsum(.SD))],
+ByAgeChart[6:10,3][,.(Age45andOlder=fsum(.SD))],
+ByAgeChart[8:10,3][,.(Age65andOlder=fsum(.SD))],
+ByAgeChart[9:10,3][,.(Age75andOlder=fsum(.SD))],
+ByAgeChart[1:10,3][,.(AllAges=fsum(.SD))])),keep.rownames=TRUE)),
+c("Date","AgeGroup","COVID19.Deaths"))[],
+
+merge(
+setnames(cbind(Date=as.Date(now()),as.data.table(t(cbind(
+ByAgeChart[1:3,4][,.(Age24andYounger=fsum(.SD))],
+ByAgeChart[1:5,4][,.(Age44andYounger=fsum(.SD))],
+ByAgeChart[6:10,4][,.(Age45andOlder=fsum(.SD))],
+ByAgeChart[8:10,4][,.(Age65andOlder=fsum(.SD))],
+ByAgeChart[9:10,4][,.(Age75andOlder=fsum(.SD))],
+ByAgeChart[1:10,4][,.(AllAges=fsum(.SD))])),keep.rownames=TRUE)),
+c("Date","AgeGroup","Pneumonia.Deaths"))[],
+
+setnames(cbind(Date=as.Date(now()),as.data.table(t(cbind(
+ByAgeChart[1:3,5][,.(Age24andYounger=fsum(.SD))],
+ByAgeChart[1:5,5][,.(Age44andYounger=fsum(.SD))],
+ByAgeChart[6:10,5][,.(Age45andOlder=fsum(.SD))],
+ByAgeChart[8:10,5][,.(Age65andOlder=fsum(.SD))],
+ByAgeChart[9:10,5][,.(Age75andOlder=fsum(.SD))],
+ByAgeChart[1:10,5][,.(AllAges=fsum(.SD))])),keep.rownames=TRUE)),
+c("Date","AgeGroup","All.Deaths"))[],by=c("Date","AgeGroup")),by=c("Date","AgeGroup"))[,
+.SD[,.(PctCovidDeaths=round(COVID19.Deaths/All.Deaths,5)* 100,
+PctPneumoniaDeaths=round(Pneumonia.Deaths/All.Deaths,5)* 100)],
+.(Date,AgeGroup,COVID19.Deaths,Pneumonia.Deaths,All.Deaths)]
+#
+
 
 
 
