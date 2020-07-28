@@ -1,0 +1,51 @@
+# More information: https://www.mortality.org
+# Tidyverse code and comment on STMF can be found from Rob J Hyndman:
+# https://robjhyndman.com/hyndsight/seasonal-mortality-rates/
+# This is data.table and lattice visualizations "Short Term Mortality Fluctuations"
+
+library(data.table)
+#library(lubridate)
+library(lattice)
+library(gridExtra)
+fsum <- function(x) {sum(x,na.rm=TRUE)}
+
+print("This can take awhile to download")
+stmf_data <- fread("https://www.mortality.org/Public/STMF/Outputs/stmf.csv", skip=1)
+
+grobUSA <- stmf_data[Sex == "b",.(DTotal,Week,Country=CountryCode),keyby=.(Year)][
+Year %in% c("2019","2020") & Country %in% c("USA"),xyplot(DTotal ~ Week | as.factor(Country),
+allow.multiple=TRUE,groups=Year,auto.key=TRUE,cex=1,lwd=2,pch=19,type=c("b"))]
+
+grobEUR <- stmf_data[Sex == "b",.(DTotal,Week,Country=CountryCode),keyby=.(Year)][
+Year %in% c("2019","2020") & Country %in% c("GBRTENW","DEUTNP","ITA","ESP"),xyplot(DTotal ~ Week | as.factor(Country),
+allow.multiple=TRUE,groups=Year,auto.key=TRUE,cex=1,lwd=2,pch=19,type=c("b"))]
+
+grobSCAN <- stmf_data[Sex == "b",.(DTotal,Week,Country=CountryCode),keyby=.(Year)][
+Year %in% c("2019","2020") & Country %in% c("SWE","NOR","FIN","DNK"),xyplot(DTotal ~ Week | as.factor(Country),
+allow.multiple=TRUE,groups=Year,auto.key=TRUE,cex=1,lwd=2,pch=19,type=c("b"))]
+
+# Print the grobs:
+
+dev.new(); grobUSA
+dev.new(); grobEUR
+dev.new(); grobSCAN
+
+# Maybe this:  
+jpeg_create <- function() {
+          systime <- as.numeric(Sys.time())
+          # dev.new()
+          jpeg(filename = paste0(systime,".jpg"),
+          width = 1548, height = 640, units = "px", pointsize = 20,
+          quality = 100, bg = "white", res = NA, family = "", restoreConsole = TRUE,
+          type = c("windows"))
+          Sys.sleep(2)}
+              
+print(paste0("This prints a numeric file to: ",getwd()))
+
+jpeg_create()
+marrangeGrob(list(grobUSA,grobEUR,grobSCAN),ncol=3,nrow=1,top="USA, Europe, Scandinavia Mortality 2019,2020")
+
+print("Nuke graphics system temporarily to finish jpeg_create() macro. Restart with dev.new()")
+graphics.off()
+
+
