@@ -1,0 +1,81 @@
+# Code under Construction: Measures of Vaccination Efficiency on State Level
+# 6:11 PM 7/8/2021
+
+library(lattice);
+library(data.table);
+
+m1 <- merge(fread("united_states_covid19_cases_deaths_and_testing_by_state.csv"),
+fread("covid19_vaccinations_in_the_united_states.csv"),by="State")
+colnames(m1) <- m1[,gsub(" ","",names(.SD))]
+names(m1)
+m1[,.(State,DosesDeliveredper100K,CaseRateper100000,DeathRateper100000)]
+m1[,.(State,TotalDosesDelivered,TotalCases,TotalDeaths)]
+
+m2 <- m1[,.(State,Dose.rate=as.numeric(DosesDeliveredper100K),
+Case.rate=as.numeric(CaseRateper100000),
+Death.rate=as.numeric(DeathRateper100000))]
+
+cor(m2[,2:4],use="complete.obs",method="spearman")
+cor(m2[,2:4],use="complete.obs",method="kendall")
+cor(m2[,2:4],use="complete.obs",method="pearson")
+
+m2[,cor.test(Dose.rate,
+Death.rate,
+use="complete.obs",method="spearman")]
+
+m2[,cor.test(Dose.rate,
+Case.rate,
+use="complete.obs",method="spearman")]
+
+m2[,cor.test(Dose.rate,
+Death.rate,
+use="complete.obs",method="pearson")]
+
+m2[,cor.test(Dose.rate,
+Case.rate,
+use="complete.obs",method="pearson")]
+
+m2[,cor.test(Dose.rate,
+Death.rate,
+use="complete.obs",method="kendall")]
+
+m2[,cor.test(Dose.rate,
+Case.rate,
+use="complete.obs",method="kendall")]
+
+m2[,plot(Death.rate ~ Dose.rate,pch=19,cex=2)]
+m2[,abline(h=(max(Death.rate,na.rm=TRUE) - min(Death.rate,na.rm=TRUE))/2,col="red",lwd=2)]
+m2[,abline(v=(max(Dose.rate,na.rm=TRUE) - min(Dose.rate,na.rm=TRUE)/2),col="red",lwd=2)]
+
+m1[,.(State,
+Dose.per100K.div.10=as.numeric(DosesDeliveredper100K)/10,
+Case.per100K=as.numeric(CaseRateper100000),
+Death.per100K.mult.50=as.numeric(DeathRateper100000) * 50)][
+,barchart(~Dose.per100K.div.10+Case.per100K+Death.per100K.mult.50 | as.factor(State),
+allow.multiple=TRUE,
+origin=0,
+col=c("red","blue","black"),
+auto.key=list(col=c("red","blue","black"),
+rectangles=FALSE,rev=TRUE,reverse.rows=TRUE))]
+
+# Not useful
+m2a <- m1[,.(State,
+TotalDosesDelivered,
+TotalCases,
+TotalDeaths)]
+
+cor(sapply(m2a[,2:4],as.numeric),use="complete.obs",method="spearman")
+cor(sapply(m2a[,2:4],as.numeric),use="complete.obs",method="kendall")
+cor(sapply(m2a[,2:4],as.numeric),use="complete.obs",method="pearson")
+sapply(m2a[,2:4]
+
+cor.test(sapply(m2a[,2:4],as.numeric),use="complete.obs",method="pearson")
+
+m3 <- m1[,.(State,
+ScaledDoseRate=as.numeric(DosesDeliveredper100K)/10,
+CaseRate=as.numeric(CaseRateper100000),
+ScaledDeathRate=as.numeric(DeathRateper100000) * 10)]
+
+
+
+
