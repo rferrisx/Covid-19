@@ -1,0 +1,52 @@
+library(data.table)
+library(lubridate)
+library(lattice)
+setwd("D:\\Politics\\CovD2019")
+# Generates plots seen here: https://www.ncovd.org/2021/09/us-covid19-daily-vaccinations-dont.html
+
+print('United States Data from Our World in Data')
+print('Mathieu, E., Ritchie, H., Ortiz-Ospina, E. et al. A global database of COVID-19 vaccinations. Nat Hum Behav (2021)')
+print('https://covid.ourworldindata.org/data/owid-covid-data.csv')
+
+# download data: Change date data first
+download.file("https://covid.ourworldindata.org/data/owid-covid-data.csv","owid_covid_data.date_here.csv")
+
+# US data for correlation
+US <- fread("owid_covid_data.09.09.2021.csv")[
+location %in% c("United States"),
+.(
+location,
+date,
+new_vaccinations,
+new_cases,
+new_deaths)]
+
+# correlations (e.g. 'cor')
+US[year(ymd(date)) == 2021,]
+US[year(ymd(date))  == 2021,.SD[,3:5]][,cor(.SD)]
+US[year(ymd(date))  == 2021,.SD[,3:5]][,cor(.SD,use="complete.obs")]
+US[year(ymd(date))  == 2021,.SD[,3:5]][,cor(.SD,use="pairwise.complete.obs",method="pearson")]
+
+# All data for xyplot
+vax.deaths <- fread("owid_covid_data.09.09.2021.csv")[,
+.(date=ymd(date),
+location,
+new.vaccinations.div.1000=(new_vaccinations/1000),
+new.deaths=new_deaths,
+new.cases.div.100=new_cases/100)]
+vax.deaths[is.na(vax.deaths)] <-0
+
+#xyplot
+dev.new();
+vax.deaths[location %in% c("United States"),
+xyplot(
+frollmean(new.vaccinations.div.1000,7) + 
+frollmean(new.deaths,7) +
+frollmean(new.cases.div.100,7) ~ date | location, 
+allow.multiple=TRUE,origin=0,lwd=3.5,ylab="",type=c("l"),col=c("red","black","blue"),
+auto.key=list(col=c("red","black","blue"),cex=2.5,rectangles=FALSE,points=FALSE,rev=FALSE))]
+# 
+
+
+
+
